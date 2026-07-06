@@ -99,5 +99,84 @@ void main() {
       await svc.deleteAllSaves('q1');
       expect(await svc.getSaveSlots('q1'), isEmpty);
     });
+
+    test('saveGame stores a custom non-autosave slot', () async {
+      final store = _InMemorySaveStore();
+      final svc = SaveGameService(store);
+
+      await svc.saveGame(
+        SaveSlot(
+          id: 'hero_save',
+          questId: 'q1',
+          slotName: 'Hero',
+          savedAt: DateTime(2026, 7, 7),
+          currentNodeId: 'n5',
+          variables: const {'gold': 999},
+          tables: const {},
+        ),
+      );
+
+      final slots = await svc.getSaveSlots('q1');
+      expect(slots, hasLength(1));
+      expect(slots.single.id, 'hero_save');
+      expect(slots.single.slotName, 'Hero');
+      expect(slots.single.variables['gold'], 999);
+    });
+
+    test('performAutosave twice overwrites the previous autosave', () async {
+      final store = _InMemorySaveStore();
+      final svc = SaveGameService(store);
+
+      await svc.performAutosave(
+        questId: 'q1',
+        currentNodeId: 'n1',
+        variables: const {'hp': 100},
+        tables: const {},
+      );
+      await svc.performAutosave(
+        questId: 'q1',
+        currentNodeId: 'n2',
+        variables: const {'hp': 50},
+        tables: const {},
+      );
+
+      final slots = await svc.getSaveSlots('q1');
+      expect(slots, hasLength(1));
+      expect(slots.single.id, SaveGameService.autosaveId);
+      expect(slots.single.currentNodeId, 'n2');
+      expect(slots.single.variables['hp'], 50);
+    });
+
+    test('saves for different quests are independent', () async {
+      final store = _InMemorySaveStore();
+      final svc = SaveGameService(store);
+
+      await svc.saveGame(
+        SaveSlot(
+          id: 's1',
+          questId: 'q1',
+          slotName: 'Q1 Save',
+          currentNodeId: 'n1',
+          variables: const {},
+          tables: const {},
+          savedAt: DateTime(2026, 7, 7),
+        ),
+      );
+      await svc.saveGame(
+        SaveSlot(
+          id: 's2',
+          questId: 'q2',
+          slotName: 'Q2 Save',
+          currentNodeId: 'n2',
+          variables: const {},
+          tables: const {},
+          savedAt: DateTime(2026, 7, 7),
+        ),
+      );
+
+      expect((await svc.getSaveSlots('q1')).length, 1);
+      expect((await svc.getSaveSlots('q2')).length, 1);
+      expect((await svc.getSaveSlots('q3')).length, 0);
+    });
   });
 }

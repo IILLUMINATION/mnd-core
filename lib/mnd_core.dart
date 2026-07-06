@@ -25,6 +25,7 @@ export 'models/quest_table.dart';
 export 'models/save_slot.dart';
 export 'models/saved_node.dart';
 export 'models/template_model.dart';
+export 'models/tag.dart';
 
 // Runtime
 export 'runtime/in_memory_script_runtime_state.dart';
