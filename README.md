@@ -1,36 +1,65 @@
 # mnd_core
 
-Core of the **Meander** text-quest engine — data models, contracts (ports),
-script executor, runtime state, and persistence services.
+Ядро игрового движка **Meander** — текстовые квесты с поддержкой скриптов,
+переменных, таблиц, таймеров и аудио.
 
-Zero platform-specific dependencies. No path_provider, no Firebase,
-no audio backends. Everything is plugged in through small ports so
-the engine can be embedded in any Flutter app, on any platform.
+⚠️ **Лицензия: GNU AGPL v3.0** — запрещает использование в закрытом (проприетарном) коде.
+Даже SaaS-решения обязаны открывать исходный код.
 
-## Features
+## Что внутри
 
-- **Script executor** — interprets Meander's quest scripting language
-- **Data models** — Quest, SavedNode, ContentItem, TemplateItem, SaveSlot, etc.
-- **Contract ports** — AudioPort, SaveStore, ScriptAssetStore, ScriptExpressionEngine
-- **Runtime state** — In-memory variable and table storage
-- **Save game service** — abstract save/load with configurable backends
-- **Script cache** — in-memory cache for script JSON with deduplication
+- **ScriptExecutor** — исполняет скрипты квеста (условия, переходы, функции, переменные)
+- **Модели данных** — Quest, SavedNode, ContentItem, TemplateItem, SaveSlot, Tag
+- **Контракты (порты)** — AudioPort, SaveStore, ScriptAssetStore, ScriptExpressionEngine
+- **Рантайм** — InMemoryScriptRuntimeState (переменные и таблицы в памяти)
+- **Сервисы** — SaveGameService, ScriptCacheService
 
-## Usage
+## Зависимости
+
+Только `flutter`, `uuid`, `meta`, `collection`. Никаких платформенных зависимостей — можно встроить в любое Flutter-приложение.
+
+## Архитектура
+
+```
+mnd_core (чистая логика)
+   ↑
+mnd_player_kit (Flutter-адаптеры)
+   ↑
+mnd_player (полноценный плеер с UI)
+```
+
+`mnd_core` — самый нижний слой. Он не знает про файловую систему, базы данных, аудио-движки.
+Всё это подключается через контракты (порты), которые реализуются в `mnd_player_kit`.
+
+## Быстрый старт
 
 ```dart
 import 'package:mnd_core/mnd_core.dart';
 
-// Configure the engine with your implementations
+// Настройка движка
 ScriptExecutor.configure(
-  assetStore: myAssetStore,
   expressionEngine: myExpressionEngine,
+  assetStore: myAssetStore,
 );
 
-// Execute scripts
-ScriptExecutor.execute(someScript, myRuntimeState);
+// Запуск скрипта
+final result = await ScriptExecutor.execute(
+  scriptData,
+  runtimeState,
+  questId: 'my_quest',
+  eventType: EventType.onNodeEnter,
+);
 ```
 
-## License
+## Тесты
 
-GNU Affero General Public License v3.0
+```bash
+cd packages/mnd_core
+flutter test  # 20 тестов
+```
+
+## Связанные репо
+
+- [mnd_player_kit](https://github.com/IILLUMINATION/mnd-kit) — Flutter-адаптеры
+- [mnd_player](https://github.com/IILLUMINATION/mnd-player) — полноценный плеер
+- [mnd-standalone-builder](https://github.com/IILLUMINATION/mnd-standalone-builder) — билдер standalone-приложений
