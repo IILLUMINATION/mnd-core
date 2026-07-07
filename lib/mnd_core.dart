@@ -7,6 +7,7 @@ library;
 // Contracts (ports)
 export 'contracts/audio_port.dart';
 export 'contracts/core_logger.dart';
+export 'contracts/node_store.dart';
 export 'contracts/quest_storage.dart';
 export 'contracts/save_store.dart';
 export 'contracts/script_asset_store.dart';
@@ -31,6 +32,7 @@ export 'models/tag.dart';
 export 'runtime/in_memory_script_runtime_state.dart';
 
 // Services
+export 'services/node_store_json_files.dart';
 export 'services/save_game_service.dart';
 export 'services/script_cache_service.dart';
 
